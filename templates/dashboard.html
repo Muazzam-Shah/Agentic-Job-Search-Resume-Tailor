@@ -1,0 +1,608 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Job Hunter AI | Command Center</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                    colors: {
+                        'slate': {
+                            850: '#1a2332',
+                            925: '#0d1520',
+                            950: '#0a0f1a',
+                        },
+                        'emerald': {
+                            450: '#14f195',
+                        },
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            background-color: #0a0f1a;
+            background-image: 
+                radial-gradient(at 0% 0%, rgba(16, 185, 129, 0.05) 0%, transparent 50%), 
+                radial-gradient(at 100% 0%, rgba(14, 165, 233, 0.05) 0%, transparent 50%),
+                radial-gradient(at 50% 100%, rgba(51, 65, 85, 0.1) 0%, transparent 50%);
+            color: #f8fafc;
+        }
+
+        .glass-panel {
+            background: rgba(30, 41, 59, 0.5);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            border: 1px solid rgba(148, 163, 184, 0.1);
+            box-shadow: 0 4px 24px rgba(0, 0, 0, 0.2);
+        }
+
+        .glass-input {
+            background: rgba(15, 23, 42, 0.8);
+            border: 1px solid rgba(100, 116, 139, 0.3);
+            color: #f8fafc;
+            transition: all 0.3s ease;
+        }
+
+        .glass-input:focus {
+            border-color: #10b981;
+            background: rgba(15, 23, 42, 0.9);
+            box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+            outline: none;
+        }
+
+        .nav-item.active {
+            background: linear-gradient(90deg, rgba(16, 185, 129, 0.15) 0%, rgba(0,0,0,0) 100%);
+            border-left: 3px solid #10b981;
+            color: #f8fafc;
+        }
+
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0f172a; 
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #334155; 
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #475569; 
+        }
+
+        .spinner {
+            border: 3px solid rgba(100, 116, 139, 0.2);
+            border-top: 3px solid #10b981;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .animate-fade-in {
+            animation: fadeIn 0.5s ease-out forwards;
+            opacity: 0;
+            transform: translateY(10px);
+        }
+
+        @keyframes fadeIn {
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body class="h-screen flex overflow-hidden font-sans">
+
+    <!-- Sidebar Navigation -->
+    <aside class="w-64 glass-panel flex flex-col z-20">
+        <div class="h-20 flex items-center px-8 border-b border-slate-700/50">
+            <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-emerald-500 to-cyan-500 flex items-center justify-center mr-3">
+                <i class="fas fa-briefcase text-white text-sm"></i>
+            </div>
+            <span class="text-xl font-bold text-slate-50">
+                JobHunter<span class="font-light text-slate-400">.ai</span>
+            </span>
+        </div>
+
+        <nav class="flex-1 py-6 px-3 space-y-2">
+            <button onclick="switchTab('upload')" id="nav-upload" class="nav-item active w-full flex items-center px-4 py-3 text-gray-400 hover:text-white rounded-r-lg transition-all duration-200">
+                <i class="fas fa-file-import w-6"></i>
+                <span class="font-medium">Upload Resume</span>
+            </button>
+            <button onclick="switchTab('search')" id="nav-search" class="nav-item w-full flex items-center px-4 py-3 text-gray-400 hover:text-white rounded-r-lg transition-all duration-200">
+                <i class="fas fa-globe w-6"></i>
+                <span class="font-medium">Find Jobs</span>
+            </button>
+            <button onclick="switchTab('generate')" id="nav-generate" class="nav-item w-full flex items-center px-4 py-3 text-gray-400 hover:text-white rounded-r-lg transition-all duration-200">
+                <i class="fas fa-wand-magic-sparkles w-6"></i>
+                <span class="font-medium">AI Generator</span>
+            </button>
+            <button onclick="switchTab('analytics')" id="nav-analytics" class="nav-item w-full flex items-center px-4 py-3 text-gray-400 hover:text-white rounded-r-lg transition-all duration-200">
+                <i class="fas fa-chart-pie w-6"></i>
+                <span class="font-medium">Analytics</span>
+            </button>
+        </nav>
+
+        <div class="p-4 border-t border-slate-700/50">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-emerald-500 to-emerald-600 flex items-center justify-center text-white font-semibold text-sm">
+                    U
+                </div>
+                <div>
+                    <p class="text-sm font-semibold text-slate-100">User Account</p>
+                    <p class="text-xs text-slate-400">Active</p>
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="flex-1 overflow-y-auto relative">
+        <header class="h-20 px-8 flex items-center justify-between sticky top-0 z-10 bg-slate-950/90 backdrop-blur-md border-b border-slate-800/50">
+            <h2 id="page-title" class="text-2xl font-semibold text-slate-50">Upload Resume</h2>
+            <div class="flex items-center gap-3">
+                <button class="w-10 h-10 rounded-lg glass-panel flex items-center justify-center text-slate-400 hover:text-emerald-400 hover:bg-emerald-500/10 transition">
+                    <i class="fas fa-bell text-sm"></i>
+                </button>
+                <a href="/" class="w-10 h-10 rounded-lg glass-panel flex items-center justify-center text-slate-400 hover:text-cyan-400 hover:bg-cyan-500/10 transition">
+                    <i class="fas fa-home text-sm"></i>
+                </a>
+            </div>
+        </header>
+
+        <div class="p-8 max-w-7xl mx-auto pb-20">
+            
+            <!-- Tab 1: Upload Resume -->
+            <div id="content-upload" class="tab-content animate-fade-in">
+                <div class="max-w-3xl mx-auto">
+                    <div class="glass-panel rounded-2xl p-10 text-center relative overflow-hidden">
+                        <div class="absolute inset-0 bg-gradient-to-b from-purple-500/5 to-transparent pointer-events-none"></div>
+                        
+                        <h2 class="text-2xl font-bold text-slate-50 mb-2">Upload Master Resume</h2>
+                        <p class="text-slate-400 mb-8">AI-powered parsing extracts your skills, experience, and achievements with precision.</p>
+                        
+                        <div class="border-2 border-dashed border-slate-600 rounded-xl p-12 hover:border-emerald-500 hover:bg-emerald-500/5 transition duration-300 group cursor-pointer" onclick="document.getElementById('resumeFile').click()">
+                            <div class="w-20 h-20 bg-slate-800 rounded-2xl mx-auto flex items-center justify-center mb-4 group-hover:scale-105 transition duration-300">
+                                <i class="fas fa-cloud-upload-alt text-3xl text-emerald-400"></i>
+                            </div>
+                            <p class="text-lg font-semibold text-slate-100">Click to upload or drag & drop</p>
+                            <p class="text-sm text-slate-500 mt-2">PDF or DOCX • Maximum 16MB</p>
+                            <input type="file" id="resumeFile" accept=".pdf,.docx" class="hidden" onchange="uploadResume()">
+                        </div>
+
+                        <div id="uploadLoading" class="mt-8 hidden">
+                            <div class="spinner mx-auto mb-4"></div>
+                            <p class="text-emerald-400 animate-pulse font-medium">Analyzing document structure...</p>
+                        </div>
+
+                        <div id="uploadSuccess" class="mt-8 hidden text-left">
+                            <div class="bg-green-500/10 border border-green-500/30 rounded-lg p-6 flex gap-4">
+                                <i class="fas fa-check-circle text-green-400 text-2xl mt-1"></i>
+                                <div>
+                                    <h3 class="text-lg font-bold text-green-400">Analysis Complete</h3>
+                                    <div id="parsedResume" class="mt-2 text-sm text-gray-300 font-mono bg-black/30 p-3 rounded max-h-40 overflow-auto"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div id="uploadError" class="mt-8 hidden">
+                            <div class="bg-red-500/10 border border-red-500/30 rounded-lg p-6 flex items-center gap-4">
+                                <i class="fas fa-exclamation-triangle text-red-400 text-2xl"></i>
+                                <p class="text-red-300" id="uploadErrorMessage"></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab 2: Search Jobs -->
+            <div id="content-search" class="tab-content hidden animate-fade-in">
+                <div class="glass-panel rounded-2xl p-8 mb-8">
+                    <div class="grid md:grid-cols-12 gap-4">
+                        <div class="md:col-span-5">
+                            <label class="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-2">Role / Keywords</label>
+                            <div class="relative">
+                                <i class="fas fa-search absolute left-4 top-3.5 text-gray-500"></i>
+                                <input type="text" id="jobQuery" placeholder="e.g. Senior Product Designer" class="w-full glass-input rounded-xl py-3 pl-10 pr-4">
+                            </div>
+                        </div>
+                        <div class="md:col-span-5">
+                            <label class="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-2">Location</label>
+                            <div class="relative">
+                                <i class="fas fa-map-marker-alt absolute left-4 top-3.5 text-gray-500"></i>
+                                <input type="text" id="jobLocation" placeholder="Remote" class="w-full glass-input rounded-xl py-3 pl-10 pr-4">
+                            </div>
+                        </div>
+                        <div class="md:col-span-2 flex items-end">
+                            <button onclick="searchJobs()" class="w-full bg-gradient-to-r from-emerald-600 to-cyan-600 hover:from-emerald-500 hover:to-cyan-500 text-white font-bold py-3 rounded-xl shadow-lg shadow-emerald-900/20 hover:shadow-emerald-500/20 transition">
+                                Search
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="searchLoading" class="hidden text-center py-12">
+                    <div class="spinner mx-auto mb-4"></div>
+                    <p class="text-slate-400 font-medium">Searching opportunities across multiple sources...</p>
+                </div>
+
+                <div id="searchResults" class="hidden">
+                    <div class="flex justify-between items-center mb-6">
+                        <h3 class="text-xl font-bold text-slate-50">Results <span id="jobCount" class="text-emerald-400 text-sm ml-2 font-normal"></span></h3>
+                    </div>
+                    <div id="jobList" class="grid gap-4"></div>
+                </div>
+            </div>
+
+            <!-- Tab 3: Generate Resume -->
+            <div id="content-generate" class="tab-content hidden animate-fade-in">
+                <div class="grid lg:grid-cols-2 gap-8 h-full">
+                    <div class="glass-panel rounded-2xl p-8 h-fit">
+                        <div class="flex items-center gap-3 mb-6 border-b border-slate-700/50 pb-4">
+                            <div class="w-8 h-8 rounded-lg bg-emerald-500/20 text-emerald-400 flex items-center justify-center"><i class="fas fa-briefcase text-sm"></i></div>
+                            <h3 class="text-xl font-bold text-slate-50">Job Details</h3>
+                        </div>
+                        
+                        <div class="space-y-5">
+                            <div>
+                                <label class="text-gray-400 text-sm mb-2 block">Company Name</label>
+                                <input type="text" id="companyName" class="w-full glass-input rounded-lg py-2 px-4">
+                            </div>
+                            <div>
+                                <label class="text-gray-400 text-sm mb-2 block">Job Title</label>
+                                <input type="text" id="jobTitle" class="w-full glass-input rounded-lg py-2 px-4">
+                            </div>
+                            <div>
+                                <label class="text-gray-400 text-sm mb-2 block">Job Description</label>
+                                <textarea id="jobDescription" rows="10" class="w-full glass-input rounded-lg py-3 px-4 text-sm font-mono leading-relaxed" placeholder="Paste the full JD here..."></textarea>
+                            </div>
+                            <button onclick="generateResume()" class="w-full bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-500 hover:to-emerald-400 text-white font-bold py-3 rounded-xl shadow-lg shadow-emerald-900/20 hover:shadow-emerald-500/20 transition mt-4 flex items-center justify-center gap-2">
+                                <i class="fas fa-wand-magic-sparkles"></i> Generate Tailored Resume
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="flex flex-col justify-center">
+                        <div id="generateLoading" class="hidden text-center">
+                            <div class="relative w-24 h-24 mx-auto mb-6">
+                                <div class="absolute inset-0 border-4 border-slate-700 rounded-full"></div>
+                                <div class="absolute inset-0 border-4 border-t-emerald-500 rounded-full animate-spin"></div>
+                                <i class="fas fa-robot absolute inset-0 m-auto text-2xl text-emerald-400 flex items-center justify-center"></i>
+                            </div>
+                            <h3 class="text-xl font-bold text-slate-50">AI is writing...</h3>
+                            <p class="text-slate-400 mt-2">Optimizing keywords, restructuring bullets, and formatting.</p>
+                        </div>
+
+                        <div id="generateSuccess" class="hidden">
+                            <div class="glass-panel rounded-2xl p-8 border border-green-500/30 text-center">
+                                <div class="w-16 h-16 bg-green-500/20 text-green-400 rounded-full flex items-center justify-center mx-auto mb-4 text-2xl">
+                                    <i class="fas fa-check"></i>
+                                </div>
+                                <h3 class="text-2xl font-bold text-white mb-2">Resume Ready!</h3>
+                                <p class="text-gray-400 mb-6" id="generatedFilename">filename.docx</p>
+                                
+                                <button onclick="downloadResume()" class="bg-white text-gray-900 px-8 py-3 rounded-xl font-bold hover:bg-gray-200 transition shadow-lg shadow-white/10 flex items-center justify-center gap-2 mx-auto">
+                                    <i class="fas fa-download"></i> Download Document
+                                </button>
+                            </div>
+                        </div>
+
+                        <div id="generateEmpty" class="text-center opacity-30">
+                            <i class="fas fa-file-contract text-9xl text-gray-500 mb-4"></i>
+                            <p class="text-xl">Your tailored resume will appear here</p>
+                        </div>
+
+                        <div id="generateError" class="hidden">
+                            <div class="bg-red-500/10 border border-red-500/30 rounded-lg p-6">
+                                <div class="flex items-center gap-4">
+                                    <i class="fas fa-exclamation-triangle text-red-400 text-2xl"></i>
+                                    <p class="text-red-300" id="generateErrorMessage"></p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab 4: Analytics -->
+            <div id="content-analytics" class="tab-content hidden animate-fade-in">
+                <div class="grid md:grid-cols-2 gap-6">
+                    <div class="glass-panel rounded-2xl p-6">
+                        <h3 class="text-lg font-bold text-slate-50 mb-6 border-b border-slate-700/50 pb-2">
+                            <i class="fas fa-chart-bar text-emerald-400 mr-2"></i>Skill Demand
+                        </h3>
+                        <div id="skillTrends" class="space-y-3">
+                            <div class="animate-pulse space-y-3">
+                                <div class="h-8 bg-white/5 rounded w-full"></div>
+                                <div class="h-8 bg-white/5 rounded w-3/4"></div>
+                                <div class="h-8 bg-white/5 rounded w-5/6"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="glass-panel rounded-2xl p-6">
+                        <h3 class="text-lg font-bold text-slate-50 mb-6 border-b border-slate-700/50 pb-2">
+                            <i class="fas fa-building text-cyan-400 mr-2"></i>Top Companies
+                        </h3>
+                        <div id="companyStats" class="space-y-3">
+                            <div class="animate-pulse space-y-3">
+                                <div class="h-8 bg-white/5 rounded w-full"></div>
+                                <div class="h-8 bg-white/5 rounded w-3/4"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="glass-panel rounded-2xl p-6 md:col-span-2">
+                        <h3 class="text-lg font-bold text-slate-50 mb-6 border-b border-slate-700/50 pb-2">
+                            <i class="fas fa-filter text-amber-400 mr-2"></i>Application Funnel
+                        </h3>
+                        <div id="successRate" class="grid grid-cols-4 gap-4 text-center"></div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <script>
+        let currentResumeFile = null;
+        let generatedFilename = null;
+
+        function switchTab(tab) {
+            // Hide all tabs
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            
+            // Update Sidebar UI
+            document.querySelectorAll('.nav-item').forEach(el => {
+                el.classList.remove('active', 'text-white');
+                el.classList.add('text-gray-400');
+            });
+
+            // Show selected tab & Active Sidebar
+            document.getElementById(`content-${tab}`).classList.remove('hidden');
+            const activeBtn = document.getElementById(`nav-${tab}`);
+            if(activeBtn) {
+                activeBtn.classList.add('active', 'text-white');
+                activeBtn.classList.remove('text-gray-400');
+            }
+
+            // Update Page Title
+            const titles = {
+                'upload': 'Upload Resume',
+                'search': 'Job Discovery',
+                'generate': 'AI Resume Generator',
+                'analytics': 'Performance Analytics'
+            };
+            document.getElementById('page-title').textContent = titles[tab] || 'Dashboard';
+
+            // Load analytics trigger
+            if (tab === 'analytics') loadAnalytics();
+        }
+
+        async function uploadResume() {
+            const file = document.getElementById('resumeFile').files[0];
+            if (!file) return;
+
+            const formData = new FormData();
+            formData.append('resume', file);
+
+            document.getElementById('uploadLoading').classList.remove('hidden');
+            document.getElementById('uploadSuccess').classList.add('hidden');
+            document.getElementById('uploadError').classList.add('hidden');
+
+            try {
+                const response = await fetch('/api/resume/upload', {
+                    method: 'POST',
+                    body: formData
+                });
+                const data = await response.json();
+
+                if (data.success) {
+                    currentResumeFile = data.filepath;
+                    document.getElementById('uploadSuccess').classList.remove('hidden');
+                    document.getElementById('parsedResume').textContent = JSON.stringify(data.parsed_data, null, 2);
+                } else {
+                    throw new Error(data.error);
+                }
+            } catch (error) {
+                document.getElementById('uploadError').classList.remove('hidden');
+                document.getElementById('uploadErrorMessage').textContent = error.message;
+            } finally {
+                document.getElementById('uploadLoading').classList.add('hidden');
+            }
+        }
+
+        async function searchJobs() {
+            const query = document.getElementById('jobQuery').value;
+            const location = document.getElementById('jobLocation').value;
+
+            if (!query) {
+                alert('Please enter a job title or keywords');
+                return;
+            }
+
+            document.getElementById('searchLoading').classList.remove('hidden');
+            document.getElementById('searchResults').classList.add('hidden');
+
+            try {
+                const response = await fetch('/api/jobs/search', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ query, location, max_results: 20 })
+                });
+                const data = await response.json();
+                
+                console.log('Job search response:', data);
+                console.log('Number of jobs received:', data.jobs ? data.jobs.length : 0);
+
+                if (data.success) {
+                    displayJobs(data.jobs);
+                } else {
+                    alert(data.error);
+                }
+            } catch (error) {
+                alert(error.message);
+            } finally {
+                document.getElementById('searchLoading').classList.add('hidden');
+            }
+        }
+
+        function displayJobs(jobs) {
+            document.getElementById('searchResults').classList.remove('hidden');
+            document.getElementById('jobCount').textContent = `(${jobs.length} found)`;
+            const jobList = document.getElementById('jobList');
+            
+            jobList.innerHTML = jobs.map(job => `
+                <div class="glass-panel p-6 rounded-xl hover:bg-slate-800/30 transition group border border-slate-700/30 hover:border-emerald-500/50">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <h3 class="text-lg font-bold text-slate-50 group-hover:text-emerald-400 transition">${job.title || 'N/A'}</h3>
+                            <p class="text-cyan-400 font-medium mb-2">${job.company || 'Company'}</p>
+                            <div class="flex items-center text-xs text-slate-500 gap-4 mb-3">
+                                <span><i class="fas fa-map-marker-alt mr-1"></i> ${job.location || 'Remote'}</span>
+                                ${job.employment_type ? `<span><i class="fas fa-briefcase mr-1"></i> ${job.employment_type}</span>` : ''}
+                                ${(job.salary_min || job.salary_max) ? `<span><i class="fas fa-money-bill mr-1"></i> ${job.salary_min || 'N/A'} - ${job.salary_max || 'N/A'}</span>` : ''}
+                            </div>
+                        </div>
+                        <button onclick="useJobForResume(\`${(job.title || '').replace(/`/g, '\\`')}\`, \`${(job.company || '').replace(/`/g, '\\`')}\`, \`${(job.description || '').replace(/`/g, '\\`')}\`, '${job.id || ''}')" 
+                                class="bg-slate-700/50 hover:bg-emerald-600 hover:text-white text-slate-300 px-4 py-2 rounded-lg transition text-sm font-semibold border border-slate-600 hover:border-emerald-500">
+                            Select
+                        </button>
+                    </div>
+                    <p class="text-sm text-slate-400 line-clamp-2">${(job.description || 'No description available').substring(0, 200)}...</p>
+                    ${job.apply_link ? `<a href="${job.apply_link}" target="_blank" class="inline-block mt-3 text-xs text-emerald-400 hover:text-emerald-300"><i class="fas fa-external-link-alt mr-1"></i>View on ${job.source || 'site'}</a>` : ''}
+                </div>
+            `).join('');
+        }
+
+        function useJobForResume(title, company, description, jobId) {
+            switchTab('generate');
+            document.getElementById('companyName').value = company || '';
+            document.getElementById('jobTitle').value = title || '';
+            document.getElementById('jobDescription').value = description || '';
+        }
+
+        async function generateResume() {
+            if (!currentResumeFile) {
+                alert('Please upload your master resume in the "Upload" tab first.');
+                switchTab('upload');
+                return;
+            }
+
+            const companyName = document.getElementById('companyName').value;
+            const jobTitle = document.getElementById('jobTitle').value;
+            const jobDescription = document.getElementById('jobDescription').value;
+
+            document.getElementById('generateLoading').classList.remove('hidden');
+            document.getElementById('generateEmpty').classList.add('hidden');
+            document.getElementById('generateSuccess').classList.add('hidden');
+
+            try {
+                const response = await fetch('/api/resume/generate', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        resume_file: currentResumeFile,
+                        job_description: jobDescription,
+                        company_name: companyName,
+                        job_title: jobTitle
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    generatedFilename = data.filename;
+                    document.getElementById('generateSuccess').classList.remove('hidden');
+                    document.getElementById('generatedFilename').textContent = data.filename;
+                } else {
+                    throw new Error(data.error);
+                }
+            } catch (error) {
+                document.getElementById('generateError').classList.remove('hidden');
+                document.getElementById('generateErrorMessage').textContent = error.message;
+                document.getElementById('generateEmpty').classList.remove('hidden');
+            } finally {
+                document.getElementById('generateLoading').classList.add('hidden');
+            }
+        }
+
+        function downloadResume() {
+            if (generatedFilename) window.location.href = `/api/resume/download/${generatedFilename}`;
+        }
+
+        async function loadAnalytics() {
+            try {
+                // Skills
+                const skillRes = await fetch('/api/analytics/skills');
+                const skillData = await skillRes.json();
+                if (skillData.success) {
+                    const html = skillData.trends.slice(0, 5).map((item, i) => `
+                        <div class="flex items-center justify-between p-3 bg-slate-800/30 rounded-lg border border-slate-700/30">
+                            <span class="text-slate-200 font-medium">${i+1}. ${item.skill}</span>
+                            <div class="h-2 w-24 bg-slate-700 rounded-full overflow-hidden">
+                                <div class="h-full bg-gradient-to-r from-emerald-500 to-emerald-400" style="width: ${Math.min(item.count * 10, 100)}%"></div>
+                            </div>
+                        </div>
+                    `).join('');
+                    document.getElementById('skillTrends').innerHTML = html;
+                }
+
+                // Companies
+                const compRes = await fetch('/api/analytics/companies');
+                const compData = await compRes.json();
+                if (compData.success) {
+                     const html = Object.entries(compData.stats).slice(0, 5).map(([company, count], i) => `
+                        <div class="flex items-center justify-between p-3 bg-slate-800/30 rounded-lg border border-slate-700/30">
+                            <span class="text-slate-200 font-medium">${company}</span>
+                            <span class="bg-cyan-500/20 text-cyan-400 px-3 py-1 rounded-full text-xs font-bold border border-cyan-500/30">${count}</span>
+                        </div>
+                    `).join('');
+                    document.getElementById('companyStats').innerHTML = html;
+                }
+
+                // Success Rate
+                const successRes = await fetch('/api/analytics/success-rate');
+                const successData = await successRes.json();
+                if (successData.success && !successData.metrics.error) {
+                    const m = successData.metrics;
+                    document.getElementById('successRate').innerHTML = `
+                        <div class="p-5 bg-slate-800/40 rounded-xl border border-slate-700/50">
+                            <p class="text-slate-400 text-xs font-semibold uppercase tracking-wide">Total</p>
+                            <p class="text-3xl font-bold text-slate-50 mt-2">${m.total_applications}</p>
+                        </div>
+                        <div class="p-5 bg-emerald-500/10 rounded-xl border border-emerald-500/30">
+                            <p class="text-emerald-400 text-xs font-semibold uppercase tracking-wide">Interview</p>
+                            <p class="text-3xl font-bold text-emerald-400 mt-2">${(m.interview_rate * 100).toFixed(0)}%</p>
+                        </div>
+                        <div class="p-5 bg-cyan-500/10 rounded-xl border border-cyan-500/30">
+                            <p class="text-cyan-400 text-xs font-semibold uppercase tracking-wide">Offer</p>
+                            <p class="text-3xl font-bold text-cyan-400 mt-2">${(m.offer_rate * 100).toFixed(0)}%</p>
+                        </div>
+                        <div class="p-5 bg-rose-500/10 rounded-xl border border-rose-500/30">
+                            <p class="text-rose-400 text-xs font-semibold uppercase tracking-wide">Reject</p>
+                            <p class="text-3xl font-bold text-rose-400 mt-2">${(m.rejection_rate * 100).toFixed(0)}%</p>
+                        </div>
+                    `;
+                }
+            } catch (e) { console.error(e); }
+        }
+    </script>
+</body>
+</html>
