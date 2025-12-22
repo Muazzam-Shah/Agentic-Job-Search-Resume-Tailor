@@ -585,7 +585,28 @@ Optimize these bullet points to better match the job requirements while staying 
                     )
             
             # Company and location on next line
-            company_para = doc.a - Professional format"""
+            company_para = doc.add_paragraph()
+            company_parts = [exp.company]
+            if exp.location:
+                company_parts.append(exp.location)
+            company_run = company_para.add_run(" | ".join(company_parts))
+            company_run.font.size = Pt(10)
+            company_para.paragraph_format.space_before = Pt(0)
+            company_para.paragraph_format.space_after = Pt(4)
+            
+            # Add bullet points
+            for bullet in bullets:
+                bullet_para = doc.add_paragraph(bullet, style='List Bullet')
+                bullet_para.paragraph_format.left_indent = Inches(0.25)
+                bullet_para.paragraph_format.space_after = Pt(2)
+                bullet_para.paragraph_format.line_spacing = 1.15
+            
+            # Add spacing after this experience
+            spacer = doc.add_paragraph()
+            spacer.paragraph_format.space_after = Pt(6)
+    
+    def _add_education_section(self, doc: Document, education: List[Education]):
+        """Add education section - Professional format"""
         # Section title
         title_para = doc.add_paragraph()
         title_run = title_para.add_run("EDUCATION")
@@ -638,7 +659,7 @@ Optimize these bullet points to better match the job requirements while staying 
             else:
                 # Add spacing if no GPA
                 spacer = doc.add_paragraph()
-                spacer.paragraph_format.space_after = Pt(4
+                spacer.paragraph_format.space_after = Pt(4)
             # Institution and dates
             inst_parts = [edu.institution]
             if edu.graduation_date:
