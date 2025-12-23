@@ -1,0 +1,112 @@
+%% Academic CV Template
+%% Comprehensive academic resume with publications and research
+
+\documentclass[11pt,a4paper,sans]{moderncv}
+
+\moderncvstyle{classic}
+\moderncvcolor{green}
+
+\usepackage[utf8]{inputenc}
+\usepackage[scale=0.80]{geometry}
+
+% Personal information
+\name{ {{- contact_info.name.split()[0] if contact_info.name }} }{ {{- contact_info.name.split()[1:] | join(' ') if contact_info.name }} }
+{% if contact_info.phone %}\phone[mobile]{ {{- contact_info.phone }} }{% endif %}
+{% if contact_info.email %}\email{ {{- contact_info.email }} }{% endif %}
+{% if contact_info.linkedin %}\social[linkedin]{ {{- contact_info.linkedin.replace('https://www.linkedin.com/in/', '').replace('https://linkedin.com/in/', '').rstrip('/') }} }{% endif %}
+{% if contact_info.github %}\social[github]{ {{- contact_info.github.replace('https://github.com/', '').rstrip('/') }} }{% endif %}
+{% if contact_info.location %}\address{ {{- contact_info.location }} }{% endif %}
+
+\begin{document}
+
+\makecvtitle
+
+%% RESEARCH INTERESTS / SUMMARY
+{% if summary %}
+\section{Research Interests}
+\cvitem{}{ {{- summary | escape_latex }} }
+{% endif %}
+
+%% EDUCATION
+{% if education %}
+\section{Education}
+{% for edu in education %}
+\cventry{ {{- edu.graduation_date or 'Expected' }} }{ {{- edu.degree | escape_latex }}{% if edu.field %} in {{ edu.field | escape_latex }}{% endif %}}{ {{- edu.institution | escape_latex }} }{ {{- edu.location or '' }} }{% if edu.gpa %}{ {{- edu.gpa }} }{% else %}{}{% endif %}{}
+{% endfor %}
+{% endif %}
+
+%% RESEARCH EXPERIENCE
+{% if experiences %}
+\section{Research \& Professional Experience}
+{% for exp, bullets in experiences %}
+\cventry{ {{- exp.start_date or '' }}--{ {{- exp.end_date or 'Present' }} }}{ {{- exp.title | escape_latex }} }{ {{- exp.company | escape_latex }} }{ {{- exp.location or '' }} }{}
+{%- if bullets %}
+{
+\begin{itemize}
+{% for bullet in bullets %}
+\item {{ bullet | escape_latex }}
+{% endfor %}
+\end{itemize}
+}
+{% else %}
+{}
+{% endif %}
+{% endfor %}
+{% endif %}
+
+%% PUBLICATIONS
+{% if publications %}
+\section{Publications}
+{% for pub in publications %}
+\cvitem{}{ {{- pub | escape_latex }} }
+{% endfor %}
+{% endif %}
+
+%% PROJECTS
+{% if projects %}
+\section{Research Projects}
+{% for project in projects %}
+\cvitem{\textbf{ {{- project.name | escape_latex }} }}{ {{- project.description | escape_latex }} }
+{% endfor %}
+{% endif %}
+
+%% TECHNICAL SKILLS
+{% if skills %}
+\section{Technical Skills}
+{% if skills_by_category %}
+{% for category, category_skills in skills_by_category.items() %}
+\cvitem{\textbf{ {{- category }} }}{ {{- category_skills | join(', ') | escape_latex }} }
+{% endfor %}
+{% else %}
+\cvitem{}{{{ skills | join(', ') | escape_latex }}}
+{% endif %}
+{% endif %}
+
+%% AWARDS & HONORS
+{% if awards or certifications %}
+\section{Awards, Honors \& Certifications}
+{% for award in awards %}
+\cvitem{}{ {{- award | escape_latex }} }
+{% endfor %}
+{% for cert in certifications %}
+\cvitem{}{ {{- cert | escape_latex }} }
+{% endfor %}
+{% endif %}
+
+%% CONFERENCE PRESENTATIONS
+{% if presentations %}
+\section{Conference Presentations}
+{% for pres in presentations %}
+\cvitem{}{ {{- pres | escape_latex }} }
+{% endfor %}
+{% endif %}
+
+%% PROFESSIONAL SERVICE
+{% if service %}
+\section{Professional Service}
+{% for serv in service %}
+\cvitem{}{ {{- serv | escape_latex }} }
+{% endfor %}
+{% endif %}
+
+\end{document}

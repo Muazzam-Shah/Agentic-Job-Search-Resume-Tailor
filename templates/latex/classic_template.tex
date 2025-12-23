@@ -1,0 +1,116 @@
+%% Classic Professional Resume Template
+%% Traditional ATS-Friendly LaTeX Resume
+
+\documentclass[11pt,letterpaper]{article}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage[margin=0.75in]{geometry}
+\usepackage{enumitem}
+\usepackage{titlesec}
+\usepackage{hyperref}
+
+% Format section headings
+\titleformat{\section}{\large\bfseries\uppercase}{}{0em}{}[\titlerule]
+\titlespacing{\section}{0pt}{12pt}{6pt}
+
+% Reduce list spacing
+\setlist{nosep, leftmargin=0.25in}
+
+% Remove page numbers
+\pagestyle{empty}
+
+\begin{document}
+
+% HEADER
+\begin{center}
+    {\Large\bfseries {{ contact_info.name | upper | escape_latex }}}\\[4pt]
+    {% if contact_info.phone %}{{ contact_info.phone | escape_latex }}{% endif %}
+    {% if contact_info.phone and contact_info.location %} $\diamond$ {% endif %}
+    {% if contact_info.location %}{{ contact_info.location | escape_latex }}{% endif %}
+    {% if (contact_info.phone or contact_info.location) and contact_info.email %} $\diamond$ {% endif %}
+    {% if contact_info.email %}{{ contact_info.email | escape_latex }}{% endif %}\\
+    {% if contact_info.linkedin %}{{ contact_info.linkedin.replace('https://', '').replace('http://', '').replace('www.', '') | escape_latex }}{% endif %}
+    {% if contact_info.linkedin and contact_info.github %} $\diamond$ {% endif %}
+    {% if contact_info.github %}{{ contact_info.github.replace('https://', '').replace('http://', '').replace('www.', '') | escape_latex }}{% endif %}
+\end{center}
+
+% OBJECTIVE/SUMMARY
+{% if summary %}
+\section{Objective}
+{{ summary | escape_latex }}
+{% endif %}
+
+% EDUCATION
+{% if education %}
+\section{Education}
+{% for edu in education %}
+\textbf{ {{- edu.degree | escape_latex }}{% if edu.field %} in {{ edu.field | escape_latex }}{% endif %}} \hfill {% if edu.graduation_date %}{{ edu.graduation_date | escape_latex }}{% endif %}\\
+{{ edu.institution | escape_latex }}{% if edu.location %}, {{ edu.location | escape_latex }}{% endif %}\\
+{% if edu.gpa %}{{ edu.gpa | escape_latex }}\\{% endif %}
+{% if not loop.last %}
+\vspace{4pt}
+{% endif %}
+{% endfor %}
+{% endif %}
+
+% EXPERIENCE
+{% if experiences %}
+\section{Experience}
+{% for exp, bullets in experiences %}
+\textbf{ {{- exp.title | escape_latex }} } \hfill {{ exp.start_date | escape_latex }}--{{ exp.end_date or 'Present' | escape_latex }}\\
+{{ exp.company | escape_latex }}{% if exp.location %}, {{ exp.location | escape_latex }}{% endif %}
+{% if bullets %}
+\begin{itemize}
+{% for bullet in bullets %}
+    \item {{ bullet | escape_latex }}
+{% endfor %}
+\end{itemize}
+{% endif %}
+{% if not loop.last %}
+\vspace{6pt}
+{% endif %}
+{% endfor %}
+{% endif %}
+
+% PROJECTS
+{% if projects %}
+\section{Projects}
+{% for project in projects %}
+\textbf{ {{- project.name | escape_latex }}. } {{ project.description | escape_latex }}
+{% if not loop.last %}
+
+{% endif %}
+{% endfor %}
+{% endif %}
+
+% SKILLS
+{% if skills %}
+\section{Skills}
+{% if skills_by_category %}
+{% for category, category_skills in skills_by_category.items() %}
+\textbf{ {{- category }}: } {{ category_skills | join(', ') | escape_latex }}\\
+{% endfor %}
+{% else %}
+{{ skills | join(', ') | escape_latex }}
+{% endif %}
+{% endif %}
+
+% CERTIFICATIONS
+{% if certifications %}
+\section{Certifications}
+{% for cert in certifications %}
+{{ cert | escape_latex }}{% if not loop.last %} $\cdot$ {% endif %}
+{% endfor %}
+{% endif %}
+
+% AWARDS
+{% if awards %}
+\section{Awards \& Honors}
+{% for award in awards %}
+{{ award | escape_latex }}{% if not loop.last %} $\cdot$ {% endif %}
+{% endfor %}
+{% endif %}
+
+\end{document}

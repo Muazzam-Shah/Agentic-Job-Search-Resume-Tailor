@@ -1,0 +1,99 @@
+%% Modern Professional Resume Template
+%% ATS-Friendly LaTeX Resume
+%% Optimized for clean parsing and professional appearance
+
+\documentclass[11pt,a4paper,sans]{moderncv}
+
+% Modern CV theme
+\moderncvstyle{banking}
+\moderncvcolor{blue}
+
+% Character encoding
+\usepackage[utf8]{inputenc}
+
+% Adjust page margins
+\usepackage[scale=0.85]{geometry}
+\setlength{\hintscolumnwidth}{3cm}
+
+% Personal information
+\name{ {{- contact_info.name.split()[0] if contact_info.name }} }{ {{- contact_info.name.split()[1:] | join(' ') if contact_info.name }} }
+{% if contact_info.phone %}\phone[mobile]{ {{- contact_info.phone }} }{% endif %}
+{% if contact_info.email %}\email{ {{- contact_info.email }} }{% endif %}
+{% if contact_info.linkedin %}\social[linkedin]{ {{- contact_info.linkedin.replace('https://www.linkedin.com/in/', '').replace('https://linkedin.com/in/', '').rstrip('/') }} }{% endif %}
+{% if contact_info.github %}\social[github]{ {{- contact_info.github.replace('https://github.com/', '').replace('https://www.github.com/', '').rstrip('/') }} }{% endif %}
+{% if contact_info.location %}\address{ {{- contact_info.location }} }{% endif %}
+
+\begin{document}
+
+\makecvtitle
+
+%% PROFESSIONAL SUMMARY / OBJECTIVE
+{% if summary %}
+\section{Professional Summary}
+\cvitem{}{ {{- summary | escape_latex }} }
+{% endif %}
+
+%% EDUCATION
+{% if education %}
+\section{Education}
+{% for edu in education %}
+\cventry{ {{- edu.graduation_date or 'Expected' }} }{ {{- edu.degree | escape_latex }} }{ {{- edu.institution | escape_latex }} }{ {{- edu.location or '' }} }{% if edu.gpa %}{ {{- edu.gpa }} }{% else %}{}{% endif %}{}
+{% endfor %}
+{% endif %}
+
+%% EXPERIENCE
+{% if experiences %}
+\section{Professional Experience}
+{% for exp, bullets in experiences %}
+\cventry{ {{- exp.start_date or '' }}--{ {{- exp.end_date or 'Present' }} }}{ {{- exp.title | escape_latex }} }{ {{- exp.company | escape_latex }} }{ {{- exp.location or '' }} }{}
+{%- if bullets %}
+{
+\begin{itemize}
+{% for bullet in bullets %}
+\item {{ bullet | escape_latex }}
+{% endfor %}
+\end{itemize}
+}
+{% else %}
+{}
+{% endif %}
+{% endfor %}
+{% endif %}
+
+%% PROJECTS
+{% if projects %}
+\section{Projects}
+{% for project in projects %}
+\cvitem{\textbf{ {{- project.name | escape_latex }} }}{ {{- project.description | escape_latex }} }
+{% endfor %}
+{% endif %}
+
+%% SKILLS
+{% if skills %}
+\section{Technical Skills}
+{% if skills_by_category %}
+{% for category, category_skills in skills_by_category.items() %}
+\cvitem{\textbf{ {{- category }} }}{ {{- category_skills | join(', ') | escape_latex }} }
+{% endfor %}
+{% else %}
+\cvitem{}{{{ skills | join(', ') | escape_latex }}}
+{% endif %}
+{% endif %}
+
+%% CERTIFICATIONS
+{% if certifications %}
+\section{Certifications}
+{% for cert in certifications %}
+\cvitem{}{ {{- cert | escape_latex }} }
+{% endfor %}
+{% endif %}
+
+%% AWARDS
+{% if awards %}
+\section{Awards \& Honors}
+{% for award in awards %}
+\cvitem{}{ {{- award | escape_latex }} }
+{% endfor %}
+{% endif %}
+
+\end{document}

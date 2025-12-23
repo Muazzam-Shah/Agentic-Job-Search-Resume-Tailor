@@ -6,12 +6,23 @@ An intelligent agentic AI system that automates resume tailoring for job applica
 
 **The fastest way to get started:**
 
-### Windows
+### Option 1: Docker (Recommended - No LaTeX Installation Required!)
+
+```bash
+# Build and start
+docker-compose up -d
+
+# Access at http://localhost:5000
+```
+
+**See:** [DOCKER_QUICKSTART.md](DOCKER_QUICKSTART.md) for details.
+
+### Option 2: Windows
 ```bash
 start.bat
 ```
 
-### Linux/Mac
+### Option 3: Linux/Mac
 ```bash
 chmod +x start.sh
 ./start.sh
@@ -24,6 +35,8 @@ Then open your browser to **http://localhost:5000**
 **For CLI usage or detailed setup:** [QUICKSTART.md](QUICKSTART.md)  
 **For RAG features:** [RAG_QUICKSTART.md](RAG_QUICKSTART.md)  
 **For web frontend details:** [FRONTEND_GUIDE.md](FRONTEND_GUIDE.md)  
+**For LaTeX setup:** [LATEX_INSTALLATION.md](Refrence_Docs/LATEX_INSTALLATION.md)  
+**For Docker setup:** [DOCKER_QUICKSTART.md](DOCKER_QUICKSTART.md)  
 **For project progress:** [PROGRESS.md](PROGRESS.md)
 
 ## 🎯 Project Overview
@@ -43,7 +56,15 @@ Job Hunter is an autonomous agent system with a professional web interface that:
 - 🔎 **Job Search**: Search across multiple job boards from one interface
 - ⚡ **One-Click Generation**: Generate tailored resumes with a single click
 - 📈 **Analytics Dashboard**: View skill trends, company stats, and success metrics
-- 💾 **Easy Export**: Download resumes as professionally formatted DOCX files
+- 💾 **Easy Export**: Download resumes as professionally formatted DOCX or LaTeX PDFs
+- 🐋 **Docker Support**: One-command setup with Docker (no LaTeX installation needed!)
+
+### LaTeX Resume Generation (NEW!)
+- 📄 **Professional Templates**: Classic, Modern, and Academic styles
+- ✨ **Superior Typography**: LaTeX-quality professional resumes
+- 🎯 **ATS-Optimized**: Clean PDF structure for perfect parsing
+- 🚀 **Direct PDF Output**: No intermediate files, straight to PDF
+- 🎨 **Multiple Styles**: Switch templates with one parameter
 
 ### AI-Powered Backend
 - 🎯 **Smart Matching**: RAG-based job-resume matching

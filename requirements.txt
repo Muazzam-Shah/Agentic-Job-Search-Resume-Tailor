@@ -17,6 +17,12 @@ requests==2.31.0
 pdfplumber
 python-docx
 
+# Simple PDF Generation - fpdf2 (Pure Python, no external deps!)
+fpdf2==2.8.1
+
+# Markdown (keeping for reference/fallback)
+markdown==3.5.1
+
 # Vector Store & Embeddings
 chromadb==0.4.22
 numpy==1.26.3
