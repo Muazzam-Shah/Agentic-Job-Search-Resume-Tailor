@@ -1,12 +1,28 @@
 # Job Hunter - AI-Powered Resume & Job Search Platform
 
-An intelligent agentic AI system that automates resume tailoring for job applications using LangChain, GPT-4, and RAG technology. Now with a professional web interface!
+An intelligent agentic AI system that automates resume tailoring for job applications using LangChain, GPT-4, and RAG technology. **Now with a complete web application featuring job search, resume generation, cover letter creation, and AI-powered feedback chatbot!**
 
 ## 🚀 Quick Start (Web Interface)
 
 **The fastest way to get started:**
 
-### Option 1: Docker (Recommended - No LaTeX Installation Required!)
+### Option 1: Complete Web Application (NEW - Phase 13!)
+
+```bash
+python app_web.py
+```
+
+Then open **http://localhost:5000** for the full-featured web dashboard with:
+- ✅ Job Search across multiple APIs
+- ✅ Resume Upload & Parsing (PDF/DOCX)
+- ✅ Tailored Resume Generation (DOCX + FAANG-style PDF)
+- ✅ AI Cover Letter Generation with Company Research
+- ✅ Interactive Resume Feedback Chatbot
+- ✅ Beautiful Tailwind CSS Interface
+
+**See:** [WEB_APP_QUICKSTART.md](Refrence_Docs/WEB_APP_QUICKSTART.md) for details.
+
+### Option 2: Docker (No LaTeX Installation Required!)
 
 ```bash
 # Build and start
@@ -17,12 +33,14 @@ docker-compose up -d
 
 **See:** [DOCKER_QUICKSTART.md](DOCKER_QUICKSTART.md) for details.
 
-### Option 2: Windows
+### Option 3: Quick Launch Scripts
+
+**Windows:**
 ```bash
 start.bat
 ```
 
-### Option 3: Linux/Mac
+**Linux/Mac:**
 ```bash
 chmod +x start.sh
 ./start.sh

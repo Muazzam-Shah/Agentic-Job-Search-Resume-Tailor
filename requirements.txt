@@ -2,10 +2,10 @@
 python-dotenv==1.0.0
 
 # LLM & Agent Framework (Latest Langchain)
-langchain==0.3.14
-langchain-openai==0.2.14
-langchain-community==0.3.14
-langchain-core==0.3.29
+langchain==0.2.16
+langchain-openai==0.1.25
+langchain-community==0.2.17
+langchain-core==0.2.40
 
 # OpenAI API (for embeddings and LLM)
 openai==1.59.5
@@ -29,6 +29,13 @@ numpy==1.26.3
 
 # Web Framework
 flask==3.0.0
+flask-socketio==5.3.5
+flask-cors==4.0.0
+streamlit==1.39.0
+
+# LangGraph for Conversational Agent
+langgraph==0.2.0
+langgraph-checkpoint==2.0.2
 
 # Testing
 pytest
