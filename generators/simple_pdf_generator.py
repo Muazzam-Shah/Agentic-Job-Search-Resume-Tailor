@@ -117,7 +117,7 @@ OUTPUT SCHEMA (strict):
         "location": "City, State",
         "links": ["linkedin.com/in/username", "github.com/username"]
     },
-    "summary": "2-3 sentence professional summary highlighting key achievements and perfect fit for this role",
+    "summary": "3-4 sentence professional summary highlighting key achievements, years of experience, technical expertise, and perfect fit for this specific role. Must be compelling and tailored.",
     "skills": {
         "Languages": ["Python", "JavaScript", "Java"],
         "Frameworks": ["React", "Django", "FastAPI"],
@@ -131,9 +131,10 @@ OUTPUT SCHEMA (strict):
             "location": "City, State",
             "date": "Jan 2020 - Present",
             "bullets": [
-                "Led X project using Y technology, resulting in Z% improvement",
-                "Developed A which reduced B by C% and saved $D annually",
-                "Architected E system serving F users with G% uptime"
+                "Led X project using Y technology, resulting in Z% improvement and impacting A users",
+                "Developed B which reduced C by D% and saved $E annually",
+                "Architected F system serving G users with H% uptime using I technologies",
+                "Implemented J feature that increased K by L% through M methodology"
             ]
         }
     ],
@@ -144,29 +145,37 @@ OUTPUT SCHEMA (strict):
             "location": "City, State",
             "year": "2020",
             "gpa": "3.8/4.0",
-            "relevant": "Relevant Coursework: Algorithms, Distributed Systems"
+            "relevant": "Relevant Coursework: Algorithms, Data Structures, Distributed Systems, Machine Learning"
         }
     ],
     "projects": [
         {
             "name": "Project Name",
-            "description": "Built X using Y technologies, achieving Z impact",
-            "tech": ["Python", "AWS", "Docker"]
+            "description": "Built X using Y technologies (Python, AWS, Docker), achieving Z impact with A users and B% performance improvement",
+            "tech": ["Python", "AWS", "Docker", "React"]
         }
+    ],
+    "certifications": [
+        "AWS Certified Solutions Architect",
+        "Google Cloud Professional"
     ]
 }
 
 CRITICAL RULES:
 1. Output ONLY JSON (no markdown, no explanations)
-2. Quantify EVERYTHING (X% growth, $Y saved, Z users)
-3. Use action verbs: Led, Developed, Architected, Reduced, Increased
-4. Each bullet = ONE strong achievement (not responsibilities)
-5. Maximum 3-4 bullets per role
-6. Skills: prioritize those matching job description
-7. Summary: show PERFECT fit for target role
-8. Projects: only if impressive/relevant"""
+2. Quantify EVERYTHING with specific numbers (X% growth, $Y saved, Z users, A milliseconds)
+3. Use powerful action verbs: Architected, Spearheaded, Engineered, Optimized, Led, Developed, Reduced, Increased, Designed, Implemented
+4. Each bullet = ONE strong achievement with measurable impact (not vague responsibilities)
+5. Include 4-5 bullets per role to show comprehensive contributions
+6. Skills: Include ALL relevant skills from candidate's background that match job, organized by category
+7. Summary: 3-4 sentences showing PERFECT fit, highlighting years of experience and key technical strengths
+8. Projects: Include 2-3 impressive projects with technical details and impact metrics
+9. Use exact technologies/tools mentioned in job description when candidate has them
+10. Make every word count - remove filler, focus on impact and results
+11. If candidate has certifications, include them
+12. Education should include GPA if strong (>3.5), relevant coursework, and honors if applicable"""
 
-        user_prompt = f"""Create a tailored resume for this job:
+        user_prompt = f"""Create a comprehensive, tailored resume for this job:
 
 **TARGET POSITION:**
 Company: {company_name}
@@ -177,11 +186,18 @@ Requirements: {job_description}
 {self._format_resume_data(resume_data)}
 
 **INSTRUCTIONS:**
-- Tailor everything to match job requirements
-- Highlight only relevant experiences
-- Use technologies from job description
-- Quantify all achievements
-- Keep professional and concise"""
+- Create a COMPLETE, professional resume with substantial content
+- Tailor ALL sections to match job requirements exactly
+- Highlight ALL relevant experiences from candidate's background
+- Extract and emphasize technologies/tools from job description that candidate has
+- Quantify EVERY achievement with specific metrics
+- Write 4-5 compelling bullet points per work experience
+- Include 3-4 relevant projects with technical details
+- Professional summary must be 3-4 sentences highlighting perfect fit
+- Organize skills by category (Languages, Frameworks, Cloud/Tools, Databases)
+- Include ALL technical skills candidate has that relate to the job and include skills from job description
+- Make the resume feel substantial and impressive , you may exeggerate details within reason based on candidate's background
+- Focus on impact, results, and technical depth"""
 
         messages = [
             SystemMessage(content=system_prompt),
@@ -228,10 +244,24 @@ Requirements: {job_description}
             formatted.append("\nExperience:")
             for exp in resume_data['experience']:
                 formatted.append(f"  - {exp.get('title', 'N/A')} at {exp.get('company', 'N/A')}")
+                formatted.append(f"    Location: {exp.get('location', 'N/A')}")
                 formatted.append(f"    {exp.get('start_date', 'N/A')} - {exp.get('end_date', 'Present')}")
+                if exp.get('description'):
+                    for desc in exp['description'][:6]:  # Include more bullets
+                        formatted.append(f"    • {desc}")
                 if exp.get('achievements'):
-                    for achievement in exp['achievements'][:4]:
+                    for achievement in exp['achievements'][:6]:
                         formatted.append(f"    • {achievement}")
+        
+        # Projects
+        if 'projects' in resume_data and resume_data['projects']:
+            formatted.append("\nProjects:")
+            for proj in resume_data['projects']:
+                name = proj.get('name', 'Project')
+                desc = proj.get('description', 'N/A')
+                formatted.append(f"  - {name}: {desc}")
+                if proj.get('tech'):
+                    formatted.append(f"    Tech: {', '.join(proj['tech'])}")
         
         # Education
         if 'education' in resume_data and resume_data['education']:
@@ -239,6 +269,8 @@ Requirements: {job_description}
             for edu in resume_data['education']:
                 formatted.append(f"  - {edu.get('degree', 'N/A')} in {edu.get('field', 'N/A')}")
                 formatted.append(f"    {edu.get('institution', 'N/A')} ({edu.get('graduation_date', 'N/A')})")
+                if edu.get('location'):
+                    formatted.append(f"    Location: {edu['location']}")
                 if edu.get('gpa'):
                     formatted.append(f"    GPA: {edu['gpa']}")
         
@@ -251,6 +283,18 @@ Requirements: {job_description}
                     formatted.append(f"  {category}: {', '.join(skill_list)}")
             elif isinstance(skills, list):
                 formatted.append(f"  {', '.join(skills)}")
+        
+        # Certifications
+        if 'certifications' in resume_data and resume_data['certifications']:
+            formatted.append("\nCertifications:")
+            for cert in resume_data['certifications']:
+                formatted.append(f"  - {cert}")
+        
+        # Awards
+        if 'awards' in resume_data and resume_data['awards']:
+            formatted.append("\nAwards & Honors:")
+            for award in resume_data['awards']:
+                formatted.append(f"  - {award}")
         
         return '\n'.join(formatted)
     

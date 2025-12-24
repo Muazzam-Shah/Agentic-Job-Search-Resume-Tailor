@@ -95,20 +95,47 @@ class SimpleConversationalAgent:
         if state.get("current_jobs"):
             context_info.append(f"User has {len(state['current_jobs'])} job results")
         if state.get("selected_job"):
-            context_info.append(f"User selected job: {state['selected_job']['job_title']}")
+            context_info.append(f"User selected job: {state['selected_job'].get('title', 'Unknown')}")
         
         context_str = " | ".join(context_info) if context_info else "No prior context"
+        
+        # Quick pattern matching for common intents
+        user_lower = user_input.lower().strip()
+        
+        # Check for job selection patterns
+        if state.get("current_jobs") and not state.get("selected_job"):
+            # User has jobs but hasn't selected one
+            selection_patterns = ["first", "second", "third", "fourth", "fifth", 
+                                "#1", "#2", "#3", "#4", "#5",
+                                "1st", "2nd", "3rd", "4th", "5th"]
+            
+            # Check if user input is just a number or ordinal
+            if user_lower in ["1", "2", "3", "4", "5"] or any(p in user_lower for p in selection_patterns):
+                return "select_job"
+            
+            # Check if user mentions a job title or company from current jobs
+            for job in state['current_jobs']:
+                job_title = job.get('title', '').lower()
+                company = job.get('company', '').lower()
+                if (len(job_title) > 5 and job_title in user_lower) or \
+                   (len(company) > 3 and company in user_lower):
+                    return "select_job"
+        
+        # Check for resume generation when job is selected but no request to generate
+        if state.get("selected_job") and state.get("resume_data") and \
+           any(word in user_lower for word in ["resume", "tailor", "generate", "create"]):
+            return "generate_resume"
         
         intent_prompt = ChatPromptTemplate.from_messages([
             ("system", """You are an intent classifier for a job hunting assistant.
 Classify the user's intent into ONE of these categories:
 
 1. search_jobs - User wants to search for jobs
-2. upload_resume - User mentions uploading/sharing resume
+2. upload_resume - User mentions uploading/sharing resume  
 3. generate_resume - User wants to create tailored resume
 4. generate_cover_letter - User wants cover letter
 5. get_feedback - User wants resume critique
-6. select_job - User is selecting a specific job (e.g., "first one", "job 2")
+6. select_job - User is selecting a specific job (numbers, ordinals, job titles)
 7. general_question - User asking questions
 8. continue_workflow - User confirming action (yes, ok, sure)
 
@@ -124,19 +151,26 @@ Respond with ONLY the intent category name."""),
             "context": context_str
         })
         
-        return result.content.strip().lower().replace(" ", "_")
+        intent = result.content.strip().lower().replace(" ", "_")
+        return intent
     
     def _execute_action(self, intent: str, user_input: str, state: ConversationState) -> ConversationState:
         """Execute action based on intent"""
         try:
             if intent == "search_jobs":
                 state = self._handle_job_search(state, user_input)
+            elif intent == "select_job":
+                state = self._handle_job_selection(state, user_input)
             elif intent == "generate_resume":
+                # If user says "generate resume for job X", first select the job
+                if not state.get("selected_job") and state.get("current_jobs"):
+                    state = self._handle_job_selection(state, user_input)
+                    # Only proceed if selection was successful
+                    if not state.get("selected_job"):
+                        return state
                 state = self._handle_resume_generation(state)
             elif intent == "generate_cover_letter":
                 state = self._handle_cover_letter_generation(state)
-            elif intent == "select_job":
-                state = self._handle_job_selection(state, user_input)
             elif intent == "continue_workflow":
                 state = self._handle_workflow_continuation(state)
             else:
@@ -198,14 +232,33 @@ Examples:
         user_lower = user_input.lower()
         job_index = None
         
-        for i, keyword in enumerate(["first", "#1", "1", "one"]):
-            if keyword in user_lower:
-                job_index = 0
-                break
-        if job_index is None:
-            for i, keyword in enumerate(["second", "#2", "2", "two"]):
+        # Try to match ordinal keywords
+        ordinals = [
+            (["first", "1st", "#1", " 1 ", "one"], 0),
+            (["second", "2nd", "#2", " 2 ", "two"], 1),
+            (["third", "3rd", "#3", " 3 ", "three"], 2),
+            (["fourth", "4th", "#4", " 4 ", "four"], 3),
+            (["fifth", "5th", "#5", " 5 ", "five"], 4),
+        ]
+        
+        for keywords, idx in ordinals:
+            for keyword in keywords:
                 if keyword in user_lower:
-                    job_index = 1
+                    job_index = idx
+                    break
+            if job_index is not None:
+                break
+        
+        # If no ordinal match, try to match job title or company name
+        if job_index is None:
+            for i, job in enumerate(jobs):
+                job_title = job.get('title', '').lower()
+                company = job.get('company', '').lower()
+                
+                # Check if user input contains significant parts of job title or company
+                if (len(job_title) > 5 and job_title in user_lower) or \
+                   (len(company) > 3 and company in user_lower):
+                    job_index = i
                     break
         
         if job_index is not None and job_index < len(jobs):
@@ -216,7 +269,7 @@ Examples:
             }
             state["workflow_stage"] = "job_selected"
         else:
-            state["last_tool_output"] = {"error": "Please specify which job (e.g., 'the first one')"}
+            state["last_tool_output"] = {"error": "Please specify which job by number (e.g., '2') or mention the job title"}
         
         return state
     
@@ -233,11 +286,18 @@ Examples:
             state["last_tool_output"] = {"error": "Please select a job first."}
             return state
         
-        job_desc = selected_job.get("job_description", "")
+        job_desc = selected_job.get("description", "")
+        if not job_desc:
+            job_desc = selected_job.get("job_description", "")
+        
         keywords = self.keyword_extractor.extract_keywords(job_desc)
         
+        # Get raw text from resume data for semantic matching
+        resume_text = resume_data.raw_text if hasattr(resume_data, 'raw_text') else ""
+        
         match_analysis = self.semantic_matcher.analyze_match(
-            resume_data=resume_data,
+            resume_text=resume_text,
+            parsed_resume=resume_data,
             job_description=job_desc
         )
         
@@ -252,8 +312,7 @@ Examples:
             parsed_resume=resume_data,
             job_description=job_desc,
             job_title=selected_job["title"],
-            company_name=selected_job["company"],
-            output_dir="output/resumes/pdf"
+            company_name=selected_job["company"]
         )
         
         doc_info = {
@@ -289,15 +348,18 @@ Examples:
             resume_data=resume_data,
             company_name=selected_job["company"],
             job_title=selected_job["title"],
-            job_description=selected_job.get("job_description", ""),
+            job_description=selected_job.get("description", selected_job.get("job_description", "")),
             style="professional"
         )
         
         from generators.cover_letter_pdf import generate_cover_letter_pdf
         
+        # Access Pydantic model field
+        candidate_name = resume_data.contact_info.name if hasattr(resume_data, 'contact_info') else "Candidate"
+        
         pdf_path = generate_cover_letter_pdf(
             cover_letter_content=cover_letter_content,
-            candidate_name=resume_data["contact_info"]["name"],
+            candidate_name=candidate_name,
             job_title=selected_job["title"],
             company_name=selected_job["company"]
         )
@@ -414,22 +476,24 @@ What would you like to work on today?"""
     def handle_file_upload(self, filepath: str, state: ConversationState) -> tuple[str, ConversationState]:
         """Handle resume file upload"""
         try:
-            resume_data = self.resume_parser.parse_resume(filepath)
+            resume_data = self.resume_parser.parse_file(filepath)
             
+            # Keep as Pydantic model for compatibility with other tools
             state["resume_data"] = resume_data
             state["resume_filepath"] = filepath
             state["uploaded_files"]["resume"] = filepath
             state["workflow_stage"] = "resume_uploaded"
             state["tools_used"].append("resume_parser")
             
-            name = resume_data["contact_info"]["name"]
-            skills_count = len(resume_data.get("skills", []))
+            # Access Pydantic model fields
+            name = resume_data.contact_info.name
+            skills_count = len(resume_data.skills) if resume_data.skills else 0
             
             response = f"✅ Resume analyzed!\n\nCandidate: {name}\nSkills: {skills_count} identified\n\n"
             
             if state.get("selected_job"):
                 job = state["selected_job"]
-                response += f"Ready to generate resume for {job['job_title']}. Should I proceed?"
+                response += f"Ready to generate resume for {job['title']}. Should I proceed?"
             elif state.get("current_jobs"):
                 response += f"You have {len(state['current_jobs'])} jobs. Which one interests you?"
             else:
