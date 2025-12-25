@@ -121,9 +121,16 @@ class SimpleConversationalAgent:
                    (len(company) > 3 and company in user_lower):
                     return "select_job"
         
+        # Check for COVER LETTER first (before resume check, to avoid confusion)
+        if any(phrase in user_lower for phrase in ["cover letter", "cover-letter", "coverletter"]) or \
+           (("cover" in user_lower or "letter" in user_lower) and 
+            any(word in user_lower for word in ["generate", "create", "write", "make"])):
+            return "generate_cover_letter"
+        
         # Check for resume generation when job is selected but no request to generate
         if state.get("selected_job") and state.get("resume_data") and \
-           any(word in user_lower for word in ["resume", "tailor", "generate", "create"]):
+           any(word in user_lower for word in ["resume", "tailor"]) and \
+           not any(word in user_lower for word in ["cover", "letter"]):
             return "generate_resume"
         
         intent_prompt = ChatPromptTemplate.from_messages([
@@ -132,12 +139,17 @@ Classify the user's intent into ONE of these categories:
 
 1. search_jobs - User wants to search for jobs
 2. upload_resume - User mentions uploading/sharing resume  
-3. generate_resume - User wants to create tailored resume
-4. generate_cover_letter - User wants cover letter
+3. generate_resume - User wants to create/generate RESUME (NOT cover letter)
+4. generate_cover_letter - User wants COVER LETTER (keywords: cover letter, cover, letter)
 5. get_feedback - User wants resume critique
 6. select_job - User is selecting a specific job (numbers, ordinals, job titles)
 7. general_question - User asking questions
-8. continue_workflow - User confirming action (yes, ok, sure)
+8. continue_workflow - User confirming action (yes, ok, sure, proceed)
+
+IMPORTANT: 
+- If user says "cover letter", "cover", "generate cover letter" → generate_cover_letter
+- If user says "resume" only → generate_resume
+- If user just says "yes" after being asked a question → continue_workflow
 
 Context: {context}
 
