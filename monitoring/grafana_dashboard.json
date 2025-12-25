@@ -60,7 +60,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "sum(agent_requests_total)",
+          "expr": "sum(increase(agent_requests_total[1h]))",
           "refId": "A"
         }
       ],
@@ -127,7 +127,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "rate(agent_latency_seconds_sum[5m]) / rate(agent_latency_seconds_count[5m])",
+          "expr": "(rate(agent_latency_seconds_sum[5m]) / rate(agent_latency_seconds_count[5m])) or vector(0)",
           "refId": "A"
         }
       ],
@@ -185,7 +185,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "sum(agent_tool_calls_total)",
+          "expr": "sum(increase(agent_tool_calls_total[1h])) or vector(0)",
           "refId": "A"
         }
       ],
@@ -247,7 +247,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "sum(agent_errors_total)",
+          "expr": "sum(increase(agent_errors_total[1h])) or vector(0)",
           "refId": "A"
         }
       ],

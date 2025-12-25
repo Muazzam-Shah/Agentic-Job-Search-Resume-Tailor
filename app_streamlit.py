@@ -350,22 +350,39 @@ def main():
         # 2. Get Agent Response
         with st.chat_message("assistant"):
             with st.spinner("Processing..."):
+                # Track tools used BEFORE the query
+                previous_tools = set(st.session_state.conversation_state.get('tools_used', []))
+                
+                # Measure latency
+                import time
+                start_time = time.time()
+                
                 try:
                     response, updated_state = st.session_state.agent.chat(
                         prompt,
                         st.session_state.conversation_state
                     )
                     
+                    # Record latency
+                    from monitoring.metrics import agent_latency_seconds
+                    latency = time.time() - start_time
+                    agent_latency_seconds.observe(latency)
+                    
                     # Record successful query
                     record_query(success=True)
                     
-                    # Track tool usage
-                    tools_used = updated_state.get('tools_used', [])
-                    for tool in tools_used:
-                        if tool not in st.session_state.conversation_state.get('tools_used', []):
-                            record_tool_call(tool)
+                    # Track NEW tool usage (tools that weren't there before)
+                    current_tools = set(updated_state.get('tools_used', []))
+                    new_tools = current_tools - previous_tools
+                    for tool in new_tools:
+                        record_tool_call(tool)
                     
                 except Exception as e:
+                    # Record latency even on error
+                    from monitoring.metrics import agent_latency_seconds
+                    latency = time.time() - start_time
+                    agent_latency_seconds.observe(latency)
+                    
                     # Record error
                     record_query(success=False)
                     record_error(type(e).__name__)
