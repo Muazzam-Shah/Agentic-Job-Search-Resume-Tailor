@@ -405,6 +405,12 @@ def main():
                         # Replace actual match score with random value between 70-90
                         random_score = random.randint(70, 90)
                         data['match_score'] = random_score
+                    elif last_output.get('type') == 'cover_letter_generated':
+                        # Handle cover letter downloads
+                        doc = last_output['document']
+                        data['downloads'] = {
+                            'pdf': {'path': doc['pdf_path']}
+                        }
                 
                 # Display text response
                 st.write(response)

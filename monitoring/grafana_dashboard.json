@@ -60,7 +60,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "sum(increase(agent_requests_total[1h]))",
+          "expr": "sum(agent_requests_total) or vector(0)",
           "refId": "A"
         }
       ],
@@ -185,7 +185,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "sum(increase(agent_tool_calls_total[1h])) or vector(0)",
+          "expr": "sum(agent_tool_calls_total) or vector(0)",
           "refId": "A"
         }
       ],
@@ -247,7 +247,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "sum(increase(agent_errors_total[1h])) or vector(0)",
+          "expr": "sum(agent_errors_total) or vector(0)",
           "refId": "A"
         }
       ],

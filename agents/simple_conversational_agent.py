@@ -357,7 +357,7 @@ Examples:
             return state
         
         cover_letter_content = self.cover_letter_generator.generate_cover_letter(
-            resume_data=resume_data,
+            parsed_resume=resume_data,  # Fixed: use parsed_resume instead of resume_data
             company_name=selected_job["company"],
             job_title=selected_job["title"],
             job_description=selected_job.get("description", selected_job.get("job_description", "")),
@@ -366,14 +366,9 @@ Examples:
         
         from generators.cover_letter_pdf import generate_cover_letter_pdf
         
-        # Access Pydantic model field
-        candidate_name = resume_data.contact_info.name if hasattr(resume_data, 'contact_info') else "Candidate"
-        
+        # Generate PDF from the cover letter object
         pdf_path = generate_cover_letter_pdf(
-            cover_letter_content=cover_letter_content,
-            candidate_name=candidate_name,
-            job_title=selected_job["title"],
-            company_name=selected_job["company"]
+            cover_letter=cover_letter_content  # Fixed: pass the GeneratedCoverLetter object
         )
         
         doc_info = {
