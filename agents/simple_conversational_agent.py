@@ -431,7 +431,7 @@ Examples:
             
             elif tool_output.get("type") == "resume_generated":
                 docs = tool_output["documents"]
-                return f"✅ Your tailored resume is ready!\n\nMatch Score: {docs['match_score']:.0f}/100\n\nDocuments generated. Would you like a cover letter?"
+                return f"✅ Your tailored resume is ready!\n\nDocuments generated. Would you like a cover letter?"
             
             elif tool_output.get("type") == "cover_letter_generated":
                 return "✅ Your cover letter is ready! Documents are available for download."
