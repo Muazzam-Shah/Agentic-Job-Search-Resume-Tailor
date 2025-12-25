@@ -41,15 +41,15 @@ class JobFetcher:
     def search_jobs_jsearch(
         self, 
         query: str, 
-        location: str = "United States",
+        location: str = None,
         num_pages: int = 1
     ) -> List[Dict]:
         """
         Search jobs using JSearch API (RapidAPI)
         
         Args:
-            query: Job search query (e.g., "Software Engineer at Google")
-            location: Location to search (default: "United States")
+            query: Job search query (e.g., "Software Engineer")
+            location: Location to search (e.g., "Pakistan", "London", "Remote")
             num_pages: Number of pages to fetch (default: 1, each page ~10 jobs)
             
         Returns:
@@ -65,15 +65,17 @@ class JobFetcher:
             "X-RapidAPI-Host": "jsearch.p.rapidapi.com"
         }
         
+        # Combine query and location for better JSearch accuracy
+        search_query = query
+        if location:
+            search_query = f"{query} in {location}"
+        
         params = {
-            "query": query,
+            "query": search_query,
             "page": "1",
             "num_pages": str(num_pages),
             "date_posted": "all"
         }
-        
-        if location:
-            params["location"] = location
         
         try:
             response = requests.get(
@@ -144,7 +146,7 @@ class JobFetcher:
     def search_jobs(
         self,
         query: str,
-        location: str = "United States",
+        location: str = None,
         max_results: int = 10,
         prefer_api: str = "jsearch"
     ) -> List[Dict]:
@@ -153,7 +155,7 @@ class JobFetcher:
         
         Args:
             query: Job search query
-            location: Location to search
+            location: Location to search (city, country, or None for global)
             max_results: Maximum results to return
             prefer_api: Preferred API ("jsearch" or "adzuna")
             
@@ -166,7 +168,9 @@ class JobFetcher:
         if prefer_api == "jsearch" and self.rapidapi_key:
             jobs = self.search_jobs_jsearch(query, location)
         elif prefer_api == "adzuna" and self.adzuna_app_id:
-            jobs = self.search_jobs_adzuna(query, location.lower(), max_results)
+            # For Adzuna, convert location to country code if needed
+            adzuna_location = self._convert_to_country_code(location) if location else "us"
+            jobs = self.search_jobs_adzuna(query, adzuna_location, max_results)
         
         # Fallback to alternative API if primary fails
         if not jobs:
@@ -178,6 +182,43 @@ class JobFetcher:
                 jobs = self.search_jobs_jsearch(query, location)
         
         return jobs[:max_results]
+    
+    def _convert_to_country_code(self, location: str) -> str:
+        """
+        Convert location name to ISO country code for Adzuna API
+        
+        Args:
+            location: Location name (e.g., "Pakistan", "United Kingdom")
+            
+        Returns:
+            2-letter country code (e.g., "pk", "gb")
+        """
+        # Common location to country code mappings
+        location_map = {
+            'pakistan': 'pk',
+            'india': 'in',
+            'united states': 'us',
+            'us': 'us',
+            'usa': 'us',
+            'united kingdom': 'gb',
+            'uk': 'gb',
+            'canada': 'ca',
+            'australia': 'au',
+            'germany': 'de',
+            'france': 'fr',
+            'spain': 'es',
+            'italy': 'it',
+            'netherlands': 'nl',
+            'poland': 'pl',
+            'brazil': 'br',
+            'mexico': 'mx',
+            'singapore': 'sg',
+            'new zealand': 'nz',
+            'south africa': 'za'
+        }
+        
+        location_lower = location.lower().strip()
+        return location_map.get(location_lower, 'us')  # Default to US if not found
     
     def _parse_jsearch_job(self, job: Dict) -> Dict:
         """Parse JSearch API response into standard format"""
